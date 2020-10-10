@@ -1,0 +1,12 @@
+for dir in */; do
+        cp "INCAR" "$dir"
+        cp "POSCAR" "$dir"
+        cp "POTCAR" "$dir"
+        cp "KPOINTS" "$dir"
+        sed -i 4d "$dir/KPOINTS"
+        dirname="`echo $dir`"
+        sed -i "4i $dirname" "$dir/KPOINTS"
+        sed -i -r 's/\// /g' "$dir/KPOINTS"
+        sed -i -r 's/[-/]/ /g' "$dir/KPOINTS"
+	sed -i "4s/./& /g" "$dir/KPOINTS"
+done
