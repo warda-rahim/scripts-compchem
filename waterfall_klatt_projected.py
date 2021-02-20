@@ -10,6 +10,7 @@ from pylab import genfromtxt
 from matplotlib import rcParams, rc, cm
 import matplotlib.ticker as ticker
 import matplotlib.gridspec as gs
+import matplotlib.colors as colors
 from matplotlib.colors import ListedColormap
 from cycler import cycler
 
@@ -21,17 +22,18 @@ plt.rc('mathtext', fontset='stixsans')
 
 
 parser = argparse.ArgumentParser(
-         description='Plots modal contributions to group velocities, lifetimes, \
-                      mean free paths and mode kappa at each qpoint and band \
+         description='Plots group velocities, lifetimes, mean free paths and mode kappa at each qpoint and band \
                       at a specific temperature')
-parser.add_argument('-k', '--kappa', metavar='kappa file',
-                    help='Phono3py kappa-mxyz.hdf5 file')
+parser.add_argument('-k', '--kappa', metavar='kappa file path',
+                    help='path to Phono3py kappa-mxyz.hdf5 file')
 parser.add_argument('-t', '--temp', metavar='temperature', type=int,
                      default=300,
-                    help='temperature at which to find lifetimes and mode kappas')
+                    help='temperature to find lifetimes and mode kappa at a specific temperature value')
 parser.add_argument('-m', '--mesh', metavar='qpoint mesh', nargs='+', type=int,
                      default='',
                      help='qpoint mesh required for some versions of Phono3py')
+parser.add_argument('--percent', metavar='percentage', type=float, default=1,
+                   help='percentage of data not included for colour bar normalisation')
 parser.add_argument('--colour', metavar='waterfall colour', nargs='+', default='',
                     help='colours for the waterfall plots')
 parser.add_argument('--cmin', metavar='colour', default='#A6D608',
@@ -46,11 +48,6 @@ parser.add_argument('--density', metavar='number of colours', type=int,
                     help='number of colours to be created between cmax and cmin')
 parser.add_argument('-o', '--output', metavar='output file suffix', default='',
                      help='suffix for the output filename')
-parser.add_argument('--style', metavar='style sheet', nargs='+', default='',
-                    help='style sheets to use. Later ones will \
-                          override earlier ones if they conflict.')
-parser.add_argument('-z', action='store_true',
-                    help='dark mode')
 args = parser.parse_args()
 
 
@@ -61,6 +58,7 @@ frequency = file['frequency'][:]
 mode_kappa = file['mode_kappa'][:]
 group_velocity = file['group_velocity'][:]
 gamma = file['gamma'][:]
+mode_kappa = file['mode_kappa'][:]
 nbands = frequency.shape[1]
 
 
@@ -76,7 +74,7 @@ mode_kappa_1D = mode_kappa_2D_avg.flatten()
 tot_grp_vel = np.array(np.sqrt(np.square(group_velocity[:,:,0]) +
             np.square(group_velocity[:,:,1]) + np.square(group_velocity[:,:,2])))
 
-group_velocity_1D = tot_grp_vel[:, :, 0].flatten()
+group_velocity_1D = tot_grp_vel[:, :].flatten()
 group_velocity_1D = group_velocity_1D * 100  #converts group_vel from THz.Angstrom to metres per second and takes the absolute value
 group_velocity_1D = np.abs(group_velocity_1D)
 
@@ -114,50 +112,48 @@ def generate_cmap(cmin='#A6D608', cmax='#E75480', alpha=1, density=512):
     return cmap
 
 
-#viridis = cm.viridis(np.linspace(0, 1, nbands))
-#print(viridis)
+colours = generate_cmap(args.cmin, args.cmax, args.alpha, args.density)
 
-colormap = generate_cmap(args.cmin, args.cmax, args.alpha, args.density)
-colors = colormap(np.linspace(0, 1, nbands))
-newcolors = np.tile(colors, [len(qpoints),1])
 
+mode_kappa_sorted = sorted(mode_kappa_1D)
+mode_kappa_new = mode_kappa_sorted[int(len(mode_kappa_sorted) * args.percent/100) : len(mode_kappa_sorted)]
+cnorm = colors.LogNorm(vmin=min(mode_kappa_new), vmax=max(mode_kappa_new))
 
 mpl.rcParams['axes.linewidth'] = 2.5
-fig = plt.figure(figsize=(27, 24)) # Edit at your peril.
-grid = gs.GridSpec(2, 2)
-ax = [' ', ' ', ' ', ' ']
+fig = plt.figure(figsize=(12.6, 36)) # Edit at your peril.
+grid = gs.GridSpec(3, 1)
+ax = [' ', ' ', ' ']
 
+#ax[0] = fig.add_subplot(grid[0])
+#ax[0].scatter(freq_1d, mode_kappa_1D, c=mode_kappa_1D, cmap=colours, norm=cnorm, s=15)
+#ax[0].set_ylim(1e-9,1e-1)
+#ax[0].set_ylabel(r'$\mathregular{\kappa_{\lambda} \ (W \ m^{-1} \ K^{-1}}$)', fontsize=50, labelpad=15)
 
 ax[0] = fig.add_subplot(grid[0])
-ax[0].scatter(freq_1d, mode_kappa_1D, s=5, facecolor=newcolors)
-ax[0].set_ylim(1e-9,1e-2)
-ax[0].set_ylabel(r'$\mathregular{\kappa_{\lambda} \ (W \ m^{-1} \ K^{-1}}$)', fontsize=50, labelpad=15)
+ax[0].scatter(freq_1d, group_velocity_1D, c=mode_kappa_1D, cmap=colours, norm=cnorm, s=15)
+ax[0].set_ylim(1e1,1e4)
+ax[0].set_ylabel(r'$\mathregular{|\nu_{\lambda}| (m s^{-1})}$', fontsize=50)
 
 ax[1] = fig.add_subplot(grid[1])
-ax[1].scatter(freq_1d, group_velocity_1D, s=5, facecolor=newcolors)
-ax[1].set_ylim(1e0,1e4)
-ax[1].set_ylabel(r'$\mathregular{|\nu_{\lambda}| (m s^{-1})}$', fontsize=50)
+ax[1].scatter(freq_1d, lifetimes, c=mode_kappa_1D, cmap=colours, norm=cnorm, s=15)
+ax[1].set_ylim(1e-2,1e2)
+ax[1].set_ylabel(r'$\mathregular{\tau_{\lambda} (ps)}$', fontsize=50)
 
 ax[2] = fig.add_subplot(grid[2])
-ax[2].scatter(freq_1d, lifetimes, s=5, facecolor=newcolors)
-ax[2].set_ylim(1e-1,2e1)
-ax[2].set_ylabel(r'$\mathregular{\tau_{\lambda} (ps)}$', fontsize=50)
+ax[2].scatter(freq_1d, mfp, c=mode_kappa_1D, cmap=colours, norm=cnorm, s=15)
+ax[2].set_ylim(1e-12,1e-6)
+ax[2].set_ylabel(r'$\mathregular{\Lambda_{\lambda} (m)}$', fontsize=50, labelpad=15)
 
-ax[3] = fig.add_subplot(grid[3])
-ax[3].scatter(freq_1d, mfp, s=5, facecolor=newcolors)
-ax[3].set_ylim(1e-13,1e-7)
-ax[3].set_ylabel(r'$\mathregular{\Lambda_{\lambda} (m)}$', fontsize=50, labelpad=15)
-
-for i in range(4):
+for i in range(3):
     ax[i].tick_params(axis='both', which='major', pad=15, direction='in', length=24, width=2.5, labelsize=50)
     ax[i].tick_params(axis='both', which='minor', pad=15, direction='in', length=12, width=2.5)
     ax[i].set_yscale('log')
     ax[i].set_xlabel('Frequency (THz)', fontsize=50)
-    ax[i].xaxis.set_major_locator(ticker.MaxNLocator(5))
-    ax[i].xaxis.set_minor_locator(ticker.AutoMinorLocator(4))
+    ax[i].xaxis.set_major_locator(ticker.MaxNLocator(8))
+    ax[i].xaxis.set_minor_locator(ticker.AutoMinorLocator(5))
 
 
-grid.update(left=0.12, wspace=0.4, right=0.96, bottom=0.08, top=0.97) # Likewise.
+grid.update(left=0.21, right=0.97, bottom=0.05, top=0.95, hspace=0.25) # Likewise.
 plt.savefig('waterfall-{}K-{}.pdf'.format(args.temp, args.output))
 plt.savefig('waterfall-{}K-{}.png'.format(args.temp, args.output))
 
