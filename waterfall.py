@@ -23,7 +23,8 @@ plt.rc('mathtext', fontset='stixsans')
 parser = argparse.ArgumentParser(
          description='Plots modal contributions to group velocities, lifetimes, \
                       mean free paths and mode kappa at each qpoint and band \
-                      at a specific temperature')
+                      at a specific temperature. \
+                      (NOTE: You can change the script to set ylim and tick positions on xaxis.)')
 parser.add_argument('-k', '--kappa', metavar='kappa file',
                     help='Phono3py kappa-mxyz.hdf5 file')
 parser.add_argument('-t', '--temp', metavar='temperature', type=int,
@@ -46,11 +47,6 @@ parser.add_argument('--density', metavar='number of colours', type=int,
                     help='number of colours to be created between cmax and cmin')
 parser.add_argument('-o', '--output', metavar='output file suffix', default='',
                      help='suffix for the output filename')
-parser.add_argument('--style', metavar='style sheet', nargs='+', default='',
-                    help='style sheets to use. Later ones will \
-                          override earlier ones if they conflict.')
-parser.add_argument('-z', action='store_true',
-                    help='dark mode')
 args = parser.parse_args()
 
 
