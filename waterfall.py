@@ -50,13 +50,13 @@ parser.add_argument('-o', '--output', metavar='output file suffix', default='',
 args = parser.parse_args()
 
 
-file = h5py.File(args.kappa, 'r')
-qpoints = file['qpoint'][:]
-temperatures = file['temperature'][:]
-frequency = file['frequency'][:]
-mode_kappa = file['mode_kappa'][:]
-group_velocity = file['group_velocity'][:]
-gamma = file['gamma'][:]
+f = h5py.File(args.kappa, 'r')
+qpoints = f['qpoint'][:]
+temperatures = f['temperature'][:]
+frequency = f['frequency'][:]
+mode_kappa = f['mode_kappa'][:]
+group_velocity = f['group_velocity'][:]
+gamma = f['gamma'][:]
 nbands = frequency.shape[1]
 
 

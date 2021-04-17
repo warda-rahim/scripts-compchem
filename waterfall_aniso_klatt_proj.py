@@ -68,12 +68,12 @@ args = parser.parse_args()
 
 
 
-file = h5py.File(args.kappa, 'r')
-qpoints = file['qpoint'][:]
-temperatures = file['temperature'][:]
-frequency = file['frequency'][:]
+f = h5py.File(args.kappa, 'r')
+qpoints = f['qpoint'][:]
+temperatures = f['temperature'][:]
+frequency = f['frequency'][:]
 nbands = frequency.shape[1]
-mode_kappa = file['mode_kappa'][:]
+mode_kappa = f['mode_kappa'][:]
 
 freq_1d = frequency.flatten()
 
@@ -97,7 +97,7 @@ for d in directions:
 
 data = []
 
-group_velocity = file['group_velocity'][:]
+group_velocity = f['group_velocity'][:]
 group_velocity_1D = []
 for i in range(3):
     grp_vel = group_velocity[:,:,i]
@@ -107,7 +107,7 @@ for i in range(3):
 data.append(group_velocity_1D)
 
 
-gamma = file['gamma'][:]
+gamma = f['gamma'][:]
 gamma_1D = gamma[temp_index[0][0], :, :].flatten()
 lifetimes = [1.0 / (2 * 2 * np.pi * i) for i in gamma_1D] # gives lifetimes in ps
 

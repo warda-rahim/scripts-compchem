@@ -56,11 +56,11 @@ rcParams['figure.figsize'] = 12.6, 12   #adjusts the figure size
 
 fig, ax = plt.subplots() 
 
-file = h5py.File(args.kappa, 'r') 
-qpoints = file['qpoint'][:]
-temperatures = file['temperature'][:]
-frequency = file['frequency'][:]
-gamma = file['gamma'][:]
+f = h5py.File(args.kappa, 'r') 
+qpoints = f['qpoint'][:]
+temperatures = f['temperature'][:]
+frequency = f['frequency'][:]
+gamma = f['gamma'][:]
 nbands = frequency.shape[1]
 print(frequency.shape)
 print(gamma.shape)

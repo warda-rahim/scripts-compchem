@@ -64,11 +64,11 @@ fig, ax = plt.subplots()
 
 temperatures, kappa_tensors = None, None
 
-file = h5py.File(args.kappa, 'r') 
-qpoints = file['qpoint'][:]
-temperatures = file['temperature'][:]
-frequency = file['frequency'][:]
-group_velocity = file['group_velocity'][:]
+f = h5py.File(args.kappa, 'r') 
+qpoints = f['qpoint'][:]
+temperatures = f['temperature'][:]
+frequency = f['frequency'][:]
+group_velocity = f['group_velocity'][:]
 nbands = frequency.shape[1]
 
 print(frequency.shape)
