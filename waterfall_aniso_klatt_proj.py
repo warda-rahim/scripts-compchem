@@ -191,10 +191,10 @@ idx = 0
 for i in range(len(quantities)):
     for j in range(len(directions)):
         ax[idx] = fig.add_subplot(grid[idx])
-        sca = ax[idx].scatter(freq_1d, data[i][dir_dict[directions[j]]], c=mode_kappa_1D[j], cmap=colours, norm=cnorm, s=15)
+        sca = ax[idx].scatter(freq_1d, data[i][dir_dict[directions[j]]], c=mode_kappa_1D[dir_dict[directions[j]]], cmap=colours, norm=cnorm, s=15)
         
         # Setting the ylim
-        data2 = sorted(data[i][j]) 
+        data2 = sorted(data[i][dir_dict[directions[j]]]) 
         new_data = data2[int(len(data2) * args.bottom/100) : int(len(data2) * (1 - args.top/100))]
         ax[idx].set_ylim(min(new_data), max(new_data))
         
